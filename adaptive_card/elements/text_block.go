@@ -67,7 +67,7 @@ func (c *TextBlock) SetWeight(value types.FontWeight) {
 	c.Weight = &value
 }
 
-func (c *TextBlock) SetWarp(value bool) {
+func (c *TextBlock) SetWrap(value bool) {
 	c.Wrap = &value
 }
 
