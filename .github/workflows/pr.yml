@@ -6,42 +6,49 @@ on:
 
 jobs:
   build:
-    name: Build and Test
-    uses: ./.github/workflows/build.yml
-    secrets: inherit
-    with:
-      debug: false
-      run_tests: false
-      bump_version: false
-      name: rabbitmqcli
-  build_container:
-    name: Build Docker Container
-    uses: ./.github/workflows/build_container.yml
-    secrets: inherit
-    needs: build
-    with:
-      debug: false
-      enabled: false
-      name: rabbitmqcli
-      image_name: cjlapao/rabbitmqcli
-  publish_release:
-    name: Publish Release
-    uses: ./.github/workflows/publish_release.yml
-    secrets: inherit
-    needs: build
-    with:
-      name: rabbitmqcli
-      debug: false
-      enabled: false
-  publish_helm:
-    name: Publish Helm
-    uses: ./.github/workflows/publish_helm.yml
-    secrets: inherit
-    needs: 
-      - publish_release
-      - build_container
-    with:
-      debug: false
-      enabled: false
-      name: rabbitmqcli
-      url: rabbitmqcli.carloslapao.com
+    name: PR Build and Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'go' ]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: |
+        go install github.com/axw/gocov/gocov@latest
+        go install github.com/AlekSi/gocov-xml@latest
+        go install github.com/matm/gocov-html/cmd/gocov-html@latest
+
+        go test -coverprofile coverage.txt -covermode count -v ./...
+        gocov convert coverage.txt | gocov-xml > cobertura-coverage.xml
+
+    - name: Code Coverage Summary Report
+      if: ${{ false }}
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: cobertura-coverage.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: false
+        indicators: true
+        output: both
+        thresholds: '40 80'
+        
+    - name: Add Coverage PR Comment
+      if: ${{ false }}
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        recreate: true
+        path: code-coverage-results.md
