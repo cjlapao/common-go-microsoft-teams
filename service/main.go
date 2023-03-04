@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	log "github.com/cjlapao/common-go-logger"
 	"github.com/cjlapao/common-go-microsoft-teams/message"
 	"github.com/cjlapao/common-go/execution_context"
 	"github.com/cjlapao/common-go/guard"
-	"github.com/cjlapao/common-go/log"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 
 type MicrosoftTeamsService struct {
 	context *execution_context.Context
-	logger  *log.Logger
+	logger  *log.LoggerService
 	Webhook string
 }
 
